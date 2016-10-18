@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:task="http://www.springframework.org/schema/task" xmlns:util="http://www.springframework.org/schema/util"  
+	xsi:schemaLocation="
+   		http://www.springframework.org/schema/beans 
+   		http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+   		http://www.springframework.org/schema/tx 
+   		http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+   		http://www.springframework.org/schema/aop 
+   		http://www.springframework.org/schema/aop/spring-aop-4.0.xsd
+   		http://www.springframework.org/schema/context
+   		http://www.springframework.org/schema/context/spring-context-4.0.xsd 
+ 		http://www.springframework.org/schema/task 
+		http://www.springframework.org/schema/task/spring-task-4.0.xsd
+		http://www.springframework.org/schema/util 
+		http://www.springframework.org/schema/util/spring-util-4.0.xsd">
+
+	<!-- 配置数据源 -->
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource"
+		destroy-method="close" >
+		<property name="driverClass" value="${db.driverClassName}" />
+		<property name="jdbcUrl"	value="${db.url}" />
+		<property name="user" value="${db.username}" />
+		<property name="password" value="${db.password}" />
+		<property name="minPoolSize" value="5"/>
+		<property name="maxPoolSize" value="15"/>
+		<property name="acquireRetryAttempts" value="30"/>
+		<property name="automaticTestTable" value="Dc"/>
+		<property name="testConnectionOnCheckout" value="true"/> 
+		<property name="maxIdleTime" value="300" />
+		<property name="idleConnectionTestPeriod" value="28000" />
+	</bean>
+	<!-- mybatis整合 -->
+	<bean id="sqlSessionFactory" class="com.qm.common.mybatis.MySqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource" />
+        <property name="configLocation" value="classpath:mybatis-config.xml" />
+        <property name="mapperLocations" value="classpath:com/qm/dao/**/*Dao.xml" />
+    </bean>
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+    	<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+    	<property name="basePackage" value="com.qm.dao"/>
+    </bean>
+    
+    <!--配置业务数据源的事务管理器 -->
+	<bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+	<!-- 事务注解驱动配置(必须在XML事务配置前面，由XML配置事务传播方式) -->
+	<!-- <tx:annotation-driven transaction-manager="txManager" proxy-target-class="true" /> -->
+
+	<!--配置事务增强,注意要与服务层方法的命名规则相符 -->
+	<tx:advice id="txAdvice" transaction-manager="txManager">
+		<tx:attributes>
+			<tx:method name="add*" propagation="REQUIRED" rollback-for="Exception" />
+			<tx:method name="save*" propagation="REQUIRED" rollback-for="Exception" />
+			<tx:method name="update*" propagation="REQUIRED" rollback-for="Exception" />
+			<tx:method name="modify*" propagation="REQUIRED" rollback-for="Exception" />
+			<tx:method name="del*" propagation="REQUIRED" rollback-for="Exception" />
+			<tx:method name="*" propagation="SUPPORTS" read-only="true" />
+		</tx:attributes>
+	</tx:advice>
+	<!--配置事务切面，关联切点和增强-->
+	<aop:config proxy-target-class="true">
+		<aop:advisor pointcut="execution(* com.qm.service..*Service*.*(..))"
+			advice-ref="txAdvice" />
+    </aop:config>
+    
+    <bean id="transactionTemplate"	class="org.springframework.transaction.support.TransactionTemplate">
+    	<property name="transactionManager" ref="txManager"/>
+		
+	</bean>
+
+</beans>

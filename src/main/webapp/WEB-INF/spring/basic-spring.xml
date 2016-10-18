@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:task="http://www.springframework.org/schema/task" xmlns:util="http://www.springframework.org/schema/util"  
+	xsi:schemaLocation="
+   		http://www.springframework.org/schema/beans 
+   		http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+   		http://www.springframework.org/schema/tx 
+   		http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+   		http://www.springframework.org/schema/aop 
+   		http://www.springframework.org/schema/aop/spring-aop-4.0.xsd
+   		http://www.springframework.org/schema/context
+   		http://www.springframework.org/schema/context/spring-context-4.0.xsd 
+ 		http://www.springframework.org/schema/task 
+		http://www.springframework.org/schema/task/spring-task-4.0.xsd
+		http://www.springframework.org/schema/util 
+		http://www.springframework.org/schema/util/spring-util-4.0.xsd">
+		
+	<!-- 自动扫描组件配置 -->
+	<context:component-scan base-package="com.qm">
+		<context:exclude-filter type="regex" expression="com.qm.dao.*" />
+		<context:exclude-filter type="regex" expression="com.qm.control.*"/>
+	</context:component-scan>
+	
+	<!-- 异步调用 -->
+	<bean id="objectMapper" class="com.qm.common.domain.ObjectMapperFactoryBean"/>
+
+	<bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<value>/WEB-INF/config/mybatis.properties</value>
+				<value>/WEB-INF/config/system.properties</value>
+			</list>
+		</property>
+		<property name="fileEncoding">
+			<value>UTF-8</value>
+		</property>
+	</bean>
+	<!-- 
+	<bean id="tokenRegistry" class="com.qm.domain.capture.token.imp.DefaultTokenRegistry"></bean>
+	
+	<bean id="tokenFactory" class="com.qm.domain.capture.token.imp.TokenFactory">
+		<property name="timeOut" value="600000" />
+	</bean>
+	 -->
+   <util:properties id="settings" location="/WEB-INF/config/system.properties" />  
+   
+</beans>

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd
+        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.0.xsd
+        http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd">
+	
+	<!-- 自动扫描控制器配置 -->
+	<context:component-scan base-package="com.qm.control">
+	</context:component-scan>
+	<context:component-scan base-package="com.qm.controller">
+	</context:component-scan>
+	<!-- 控制器注解驱动配置 -->
+	<mvc:annotation-driven>
+		<mvc:path-matching suffix-pattern="false" />
+	</mvc:annotation-driven>
+	<!-- 映射静态资源路径 -->
+ 	<mvc:resources location="/resources/" mapping="/resources/**" />
+ 	<mvc:resources location="/static/" mapping="/static/**" />
+ 	
+	<bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping">
+		<property name="order" value="-1"/>
+		<property name="interceptors">
+			<list>
+				<bean class="com.qm.web.AccessLogInterceptor"/>
+				<bean class="com.qm.web.IllegalAccessInterceptor">
+					<property name="enableFlag" value="false"/>
+				</bean>
+			</list>
+		</property>
+	</bean>
+
+	
+
+	<!-- 参数解析器配置
+	<bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter">
+		<property name="order" value="1" />
+		<property name="webBindingInitializer">
+			<bean class="org.springframework.web.bind.support.ConfigurableWebBindingInitializer">   
+    			<property name="conversionService">
+    				<bean class="org.springframework.format.support.FormattingConversionServiceFactoryBean">
+						<property name="converters">
+							<list>
+								<bean class="com.qm.domain.databind.CorpIdCoverter" />
+							</list>
+						</property>
+					</bean>
+    			</property>   
+			</bean>
+		</property>
+		<property name="messageConverters">
+			<list>
+				<bean class="org.springframework.http.converter.StringHttpMessageConverter">
+					<property name="writeAcceptCharset" value="false"/>
+				</bean>
+				<bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter"/>
+			</list>
+		</property>
+	</bean>-->
+ 	
+	<!-- 系统异常处理器 -->
+	<bean id="systemExceptionHandler" class="com.qm.common.exception.HttpCodeExceptionResolver">
+		<property name="exceptionView" value="error/Exception" />
+		<property name="order" value="1" />
+	</bean>
+
+	<!-- JSON视图配置 -->
+	<bean id="jsonView" class="org.springframework.web.servlet.view.json.MappingJackson2JsonView">
+		<property name="objectMapper" ref="objectMapper"/>
+		<property name="extractValueFromSingleKeyModel" value="true" />
+		<property name="modelKeys">
+			<set>
+				<value>responseResult</value>
+			</set>
+		</property>
+	</bean>
+	
+	<!-- 名称匹配视图解析器 -->
+	<bean id="beanNameViewResolver" class="org.springframework.web.servlet.view.BeanNameViewResolver">
+		<property name="order" value="1" />
+	</bean>
+	<!-- JSP页面视图解析器 -->
+	<bean id="jspViewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="viewClass" value="org.springframework.web.servlet.view.JstlView" />
+		<property name="prefix" value="/WEB-INF/jsp" />
+		<property name="suffix" value=".jsp" />
+		<property name="order" value="5" />
+	</bean>
+
+</beans>
